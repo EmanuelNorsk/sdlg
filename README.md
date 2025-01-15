@@ -18,7 +18,7 @@ This document was written in version v0.0.1
 
 Functions added to the current version:
 
-## Creates a screen to draw on with the width and height of your choice. Current flags that work are: sdlg.RESIZABLE
+### Creates a screen to draw on with the width and height of your choice. Current flags that work are: sdlg.RESIZABLE
 sdlg.display.set_mode(Tuple(width, height), flags) -> Display
 
 # Fills the window with a color. Color values are between 0 - 255
