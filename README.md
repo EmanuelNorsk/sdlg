@@ -3,7 +3,7 @@ A pure python written library built on top of PySDL3 to create programs and game
 
 This document was written in version v0.0.1
 
-
+-------------------------------------------
 
 
 
