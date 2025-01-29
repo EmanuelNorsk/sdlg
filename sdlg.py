@@ -3,6 +3,7 @@ import ctypes
 import time as t
 import resources.time as time
 
+
 cache = None
 startup_time = t.time()
 
@@ -11,17 +12,17 @@ class Display:
         self.window = sdl3.SDL_Window
         self.renderer = sdl3.SDL_Renderer
         self.draw_system = 0
-        self.innerSize = (0, 0)
         self.scale = False
-        self.scaleX = 1.0
-        self.scaleY = 1.0
-        self.lastSize = (0, 0)
+        self.size = (0, 0)
+        self.innerSize = (0, 0)
+
     def set_mode(self, size, flags = 0):
         self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), ctypes.c_ulonglong(flags))
         self.renderDriver = ctypes.c_char_p(b"software")
         self.renderHint = ctypes.c_char_p(sdl3.SDL_HINT_RENDER_DRIVER.encode('utf-8'))
         sdl3.SDL_SetHint(self.renderHint, self.renderDriver)
         self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, None)
+        self.size = size
         self.innerSize = size
         return self
     def fill(self, rgba):
@@ -42,22 +43,16 @@ class Display:
     def scaleWindow(self, scale: bool):
         self.scale: bool = scale
         if scale:
-                            
-            width = ctypes.c_int()
-            height = ctypes.c_int()
-            sdl3.SDL_GetWindowSizeInPixels(self.window, ctypes.byref(width), ctypes.byref(height))
-            self.innerSize = (width.value, height.value)
-            self.scaleX = 1
-            self.scaleY = 1
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(self.size[0]), ctypes.c_long(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)  
+        else:
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(self.size[0]), ctypes.c_long(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)                
 
-    def setInnerSize(self, size: tuple):
-        self.innerSize: tuple = size
-        width = ctypes.c_int()
-        height = ctypes.c_int()
-        sdl3.SDL_GetWindowSizeInPixels(self.window, ctypes.byref(width), ctypes.byref(height))
+    def setInnerSize(self, size: tuple):  
+        self.innerSize = size
         if self.scale:
-            self.scaleX = width.value / self.innerSize[0]
-            self.scaleY = height.value / self.innerSize[1]
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)  
+        else:
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)   
 
 
     
@@ -67,31 +62,20 @@ class Draw:
     def rect(self, screen: Display, color, rect_values, width = 0):
         global cache
         sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
+
+        if cache:
+            rect = cache
+
         if width == 0:
             if screen.draw_system == 0:
-                rect = sdl3.SDL_FRect(ctypes.c_float((rect_values[0] * screen.scaleX)), ctypes.c_float((rect_values[1] * screen.scaleY)), ctypes.c_float((rect_values[2] * screen.scaleX)), ctypes.c_float((rect_values[3] * screen.scaleY)))
+                rect = sdl3.SDL_FRect(ctypes.c_float((rect_values[0])), ctypes.c_float((rect_values[1])), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
             else:
-                width = ctypes.c_int()
-                height = ctypes.c_int()
-                sdl3.SDL_GetWindowSizeInPixels(screen.window, ctypes.byref(width), ctypes.byref(height))
-                if screen.scale == False:
-                    rect = sdl3.SDL_FRect(ctypes.c_float(rect_values[0] + width.value / 2 - rect_values[2] / 2), ctypes.c_float(-rect_values[1] + height.value / 2 - rect_values[3] / 2), ctypes.c_float(rect_values[2]), ctypes.c_float(rect_values[3]))
-                else:
-                    if cache != None and startup_time < t.time() - 1:
-                        rect = cache
-                        cache = None
-                    else:
-                        if cache != None:
-                            cache = None
-                        if screen.lastSize != (width.value, height.value):
-                            screen.scaleX = width.value / screen.innerSize[0]
-                            screen.scaleY = height.value / screen.innerSize[1]
-                            screen.lastSize = (width.value, height.value)
+                #width = ctypes.c_int()
+                #height = ctypes.c_int()
+                #sdl3.SDL_GetWindowSizeInPixels(screen.window, ctypes.byref(width), ctypes.byref(height))
+                rect = sdl3.SDL_FRect(ctypes.c_float(rect_values[0] + screen.innerSize[0] / 2 - rect_values[2] / 2), ctypes.c_float(-rect_values[1] + screen.innerSize[1] / 2 - rect_values[3] / 2), ctypes.c_float(rect_values[2]), ctypes.c_float(rect_values[3]))
 
-                        x = ( rect_values[0] / screen.innerSize[0] + 0.5) * width.value  - (rect_values[2] * screen.scaleX / 2)
-                        y = (-rect_values[1] / screen.innerSize[1] + 0.5) * height.value - (rect_values[3] * screen.scaleY / 2)
 
-                        rect = sdl3.SDL_FRect(ctypes.c_float(x), ctypes.c_float(y), ctypes.c_float((rect_values[2] * screen.scaleX)), ctypes.c_float((rect_values[3] * screen.scaleY)))  
             error = sdl3.SDL_GetError()
             if error: print(error)
             sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect))

@@ -85,8 +85,8 @@ while running:
         sprite.cache = sprite.draw()
 
 
-    print(f"FPS: {Clock.get_fps()}")
-    print(Screen.get_fps())
+    #print(f"FPS: {Clock.get_fps()}")
+    #print(Screen.get_fps())
     sdlg.display.update()
 
 
