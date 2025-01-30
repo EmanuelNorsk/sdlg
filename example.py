@@ -43,7 +43,7 @@ class Player:
 
 Sprites = []
 
-Player1 = Player((0, 0, 200, 200), (100, 200, 200, 200), 0)
+Player1 = Player((0, 0, 200, 200), (100, 200, 200, 200), 5)
 Player1.attachKeyboard()
 
 Sprites.append(Player1)
@@ -88,6 +88,8 @@ while running:
     #print(f"FPS: {Clock.get_fps()}")
     #print(Screen.get_fps())
     sdlg.display.update()
+
+    
 
 
 sdlg.quit()
