@@ -107,7 +107,7 @@ class Draw:
 
         if cached_texture:
 
-            #sdl3.SDL_SetTextureColorMod(texture, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]))
+            sdl3.SDL_SetTextureColorMod(cached_texture, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]))
             sdl3.SDL_RenderTexture(screen.renderer, cached_texture, rect, rectFinal)
             error = sdl3.SDL_GetError()
             if error: print(error)
