@@ -95,8 +95,8 @@ class Draw:
 
             rect1 = sdl3.SDL_FRect(ctypes.c_float(1), ctypes.c_float(1), ctypes.c_float(width), ctypes.c_float(rect_values[3]))
             rect2 = sdl3.SDL_FRect(ctypes.c_float(1), ctypes.c_float(1), ctypes.c_float(rect_values[2]), ctypes.c_float(width))
-            rect3 = sdl3.SDL_FRect(ctypes.c_float((rect_values[2] - width)), ctypes.c_float(1), ctypes.c_float(width), ctypes.c_float(rect_values[3]))
-            rect4 = sdl3.SDL_FRect(ctypes.c_float(1), ctypes.c_float((rect_values[3] - width)), ctypes.c_float(rect_values[2]), ctypes.c_float(width))
+            rect3 = sdl3.SDL_FRect(ctypes.c_float((rect_values[2] - width + 1)), ctypes.c_float(1), ctypes.c_float(width), ctypes.c_float(rect_values[3]))
+            rect4 = sdl3.SDL_FRect(ctypes.c_float(1), ctypes.c_float((rect_values[3] - width + 1)), ctypes.c_float(rect_values[2]), ctypes.c_float(width))
 
             sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect1))
             sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect2))
