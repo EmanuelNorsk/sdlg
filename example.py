@@ -13,13 +13,13 @@ class Player:
         self.color = color
         self.borderWidth = borderWidth
 
-        self.cache = None
 
         self.keyboard = False
         self.speed = 640
     def draw(self):
         global Screen
-        return sdlg.draw.rect(Screen, self.color, (self.x, self.y, self.width, self.height), self.borderWidth)
+        sdlg.draw.rect(Screen, self.color, (self.x, self.y, self.width, self.height), self.borderWidth)
+        return None
 
     def attachKeyboard(self):
         self.keyboard = True
@@ -29,21 +29,16 @@ class Player:
         keys = sdlg.key.get_pressed()
         if keys[sdlg.K_w]:
             self.y += self.speed * Clock.delta
-            self.cache = None
         if keys[sdlg.K_a]:
             self.x -= self.speed * Clock.delta
-            self.cache = None
         if keys[sdlg.K_s]:
             self.y -= self.speed * Clock.delta
-            self.cache = None
         if keys[sdlg.K_d]:
             self.x += self.speed * Clock.delta
-            self.cache = None
 
 
 Sprites = []
-
-Player1 = Player((0, 0, 200, 200), (100, 200, 200, 200), 1)
+Player1 = Player((0, 0, 200, 200), (100, 200, 200, 200), 5)
 Player1.attachKeyboard()
 
 Sprites.append(Player1)
@@ -69,9 +64,6 @@ while running:
     for e in sdlg.event.get():
         if e.type == sdlg.QUIT: # QUIT
             running = False
-        if e.type == sdlg.VIDEORESIZE:
-            for sprite in Sprites:
-                sprite.cache = None
 
 
   
@@ -80,12 +72,10 @@ while running:
     for sprite in Sprites:
         sprite: Player
         sprite.main()
-        if sprite.cache:
-            sdlg.cache = sprite.cache
-        sprite.cache = sprite.draw()
+        sprite.draw()
 
 
-    #print(f"FPS: {Clock.get_fps()}")
+    print(f"FPS: {Clock.get_fps()}")
     #print(Screen.get_fps())
     sdlg.display.update()
 
