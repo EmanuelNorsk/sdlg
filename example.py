@@ -60,7 +60,6 @@ last_fps_per_second = t.perf_counter()
 while running:
     Clock.tick()
 
-
     for e in sdlg.event.get():
         if e.type == sdlg.QUIT: # QUIT
             running = False
@@ -75,7 +74,7 @@ while running:
         sprite.draw()
 
 
-    print(f"FPS: {Clock.get_fps()}")
+    #print(f"FPS: {Clock.get_fps()}")
     #print(Screen.get_fps())
     sdlg.display.update()
 

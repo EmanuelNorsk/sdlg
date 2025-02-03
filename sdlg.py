@@ -172,22 +172,15 @@ class Events:
         Returns:
             list[Event]: A list of Event objects.
         """
-        sdl3.SDL_PumpEvents()
-        event_list = []
-        event_count = sdl3.SDL_PeepEvents(ctypes.byref(self.sdl_event), ctypes.sizeof(self.sdl_event), sdl3.SDL_GETEVENT, sdl3.SDL_EVENT_FIRST, sdl3.SDL_EVENT_LAST)
 
-        if self.started == True:
-            for x in range(event_count):
-                try:
-                    event_type = Event(self.sdl_event.type)
-                    error = sdl3.SDL_GetError()
-                    if error: print(error)
-                    event_list.append(event_type)
-                except Exception:
-                    pass
-        elif self.started < t.time():
-            self.started = True
+        events = sdl3.SDL_Event()
+        event_list = []
+
+        while sdl3.SDL_PollEvent(events):
+            event = Event(events.type)
+            event_list.append(event)
         return event_list
+
 
 
 
@@ -217,7 +210,7 @@ draw = Draw()
 key = Key()
 
 RESIZABLE = sdl3.SDL_WINDOW_RESIZABLE
-QUIT = 528
+QUIT = sdl3.SDL_EVENT_QUIT
 VIDEORESIZE = sdl3.SDL_EVENT_WINDOW_RESIZED
 
 
