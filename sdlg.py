@@ -19,7 +19,7 @@ class Display:
     def set_mode(self, size, flags = 0):
         self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), ctypes.c_ulonglong(flags))
         print([sdl3.SDL_GetRenderDriver(x) for x in range(sdl3.SDL_GetNumRenderDrivers())])
-        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"software")
+        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"vulkan")
         self.size = size
         self.innerSize = size
         return self
@@ -80,11 +80,13 @@ class Draw:
 
         else:
             texture = sdl3.SDL_CreateTexture(screen.renderer, sdl3.SDL_PIXELFORMAT_RGBA8888, sdl3.SDL_TEXTUREACCESS_TARGET, ctypes.c_long((rect_values[2] + 4)), ctypes.c_long((rect_values[3] + 4)))
+            rectXInt = int(rect_values[0])
+            rectYInt = int(rect_values[1])
             rect = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float((rect_values[2] + 4)), ctypes.c_float((rect_values[3] + 4)))
             if screen.draw_system == 0:
-                rectFinal = sdl3.SDL_FRect(ctypes.c_float((rect_values[0] - 2)), ctypes.c_float((rect_values[1] - 2)), ctypes.c_float((rect_values[2] + 4)), ctypes.c_float((rect_values[3] + 4)))
+                rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt - 2)), ctypes.c_float((rectYInt - 2)), ctypes.c_float((rect_values[2] + 4)), ctypes.c_float((rect_values[3] + 4)))
             else:
-                rectFinal = sdl3.SDL_FRect(ctypes.c_float((rect_values[0] - rect_values[2] / 2 + screen.innerSize[0] / 2 - 2)), ctypes.c_float((-rect_values[1] - rect_values[3] / 2 + screen.innerSize[1] / 2 - 2)), ctypes.c_float((rect_values[2] + 4)), ctypes.c_float((rect_values[3] + 4)))
+                rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt - rect_values[2] / 2 + screen.innerSize[0] / 2 - 2)), ctypes.c_float((-rectYInt - rect_values[3] / 2 + screen.innerSize[1] / 2 - 2)), ctypes.c_float((rect_values[2] + 4)), ctypes.c_float((rect_values[3] + 4)))
                 
 
             sdl3.SDL_SetRenderTarget(screen.renderer, texture)
@@ -93,10 +95,10 @@ class Draw:
 
             sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
 
-            rect1 = sdl3.SDL_FRect(ctypes.c_float(1), ctypes.c_float(1), ctypes.c_float(width), ctypes.c_float(rect_values[3]))
-            rect2 = sdl3.SDL_FRect(ctypes.c_float(1), ctypes.c_float(1), ctypes.c_float(rect_values[2]), ctypes.c_float(width))
-            rect3 = sdl3.SDL_FRect(ctypes.c_float((rect_values[2] - width + 1)), ctypes.c_float(1), ctypes.c_float(width), ctypes.c_float(rect_values[3]))
-            rect4 = sdl3.SDL_FRect(ctypes.c_float(1), ctypes.c_float((rect_values[3] - width + 1)), ctypes.c_float(rect_values[2]), ctypes.c_float(width))
+            rect1 = sdl3.SDL_FRect(ctypes.c_float(2), ctypes.c_float(2), ctypes.c_float(width), ctypes.c_float(rect_values[3]))
+            rect2 = sdl3.SDL_FRect(ctypes.c_float(2), ctypes.c_float(2), ctypes.c_float(rect_values[2]), ctypes.c_float(width))
+            rect3 = sdl3.SDL_FRect(ctypes.c_float((rect_values[2] - width + 2)), ctypes.c_float(2), ctypes.c_float(width), ctypes.c_float(rect_values[3]))
+            rect4 = sdl3.SDL_FRect(ctypes.c_float(2), ctypes.c_float((rect_values[3] - width + 2)), ctypes.c_float(rect_values[2]), ctypes.c_float(width))
 
             sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect1))
             sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect2))
