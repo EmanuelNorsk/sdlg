@@ -97,9 +97,6 @@ def loop():
         #print(Screen.get_fps())
         sdlg.display.update()
 
-import cProfile
-cProfile.run('loop()', filename='profile_results.prof')
-
 if __name__ == "__main__":
     loop()
 
