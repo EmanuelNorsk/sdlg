@@ -78,15 +78,9 @@ def loop():
         Clock.tick()
 
 
-        #for e in sdlg.event.get():
-        #    if e.type == sdlg.QUIT: # QUIT
-        #        running = False
-
-
-        if t.time() > starting_time + 5:
-            running = False
-
-
+        for e in sdlg.event.get():
+            if e.type == sdlg.QUIT: # QUIT
+                running = False
         
         Screen.fill((255,255,255,255))
 
