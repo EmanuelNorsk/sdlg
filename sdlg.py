@@ -3,7 +3,13 @@ import ctypes
 import time as t
 import resources.time as time
 
+import psutil, os
+p = psutil.Process(os.getpid())
+p.cpu_affinity([0, 1])
+
 startup_time = t.time()
+
+ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00000080)  # HIGH_PRIORITY_CLASS
 
 
 class Cache():
@@ -51,7 +57,7 @@ class Display:
     def set_mode(self, size, flags = 0):
         self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), ctypes.c_ulonglong(flags))
         print([sdl3.SDL_GetRenderDriver(x) for x in range(sdl3.SDL_GetNumRenderDrivers())])
-        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"software")
+        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"vulkan")
         self.size = size
         self.innerSize = size
         return self
@@ -82,7 +88,6 @@ class Display:
         else:
             sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)   
 
-
     
 class Draw:
     def __init__(self):
@@ -90,10 +95,11 @@ class Draw:
 
 
     def rect(self, screen: Display, color, rect_values, width = 0):
+
         global cache
         sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
 
-        cached_texture = cache.get(f"rect:{rect_values[2]}:{rect_values[3]}:{width}")
+        cached_texture = cache.get(f"rect:{rect_values[2]}:{rect_values[3]}:{width}:{color}")
 
         #print(cached_texture)
 
@@ -144,7 +150,7 @@ class Draw:
             sdl3.SDL_SetRenderTarget(screen.renderer, None)
             sdl3.SDL_RenderTexture(screen.renderer, texture, rect, rectFinal)
 
-            cache.set(f"rect:{rect_values[2]}:{rect_values[3]}:{width}", texture, callback=destroy_texture)
+            cache.set(f"rect:{rect_values[2]}:{rect_values[3]}:{width}:{color}", texture, callback=destroy_texture)
 
             #sdl3.SDL_DestroyTexture(texture)
 
@@ -172,12 +178,10 @@ class Events:
         Returns:
             list[Event]: A list of Event objects.
         """
-
-        events = sdl3.SDL_Event()
+        sdl3.SDL_PumpEvents()
         event_list = []
-
-        while sdl3.SDL_PollEvent(events):
-            event = Event(events.type)
+        while sdl3.SDL_PollEvent(self.sdl_event):
+            event = Event(self.sdl_event.type)
             event_list.append(event)
         return event_list
 

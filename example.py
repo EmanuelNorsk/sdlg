@@ -1,48 +1,16 @@
 import sdlg
 #import pygame as sdlg
 import time as t
+import random
 
-import numpy as np
+import colorsys
 
-# Prism colormap colors (manually extracted from Matplotlib)
-PRISM_COLORS = [
-    (255, 0, 0), (255, 127, 0), (255, 255, 0), (0, 255, 0), 
-    (0, 255, 255), (0, 0, 255), (127, 0, 255), (255, 0, 255)
-]
+def rainbow(time, speed, opacity = 255):
+    ti = ((time * speed) % 1)
+    colors = colorsys.hsv_to_rgb(ti, 1, 1)
+    return (int(colors[0] * 255), int(colors[1] * 255), int(colors[2] * 255), opacity)
 
-def interpolate_color(t, colors):
-    """
-    Interpolates between colors in the PRISM_COLORS list.
 
-    :param t: A floating-point number in the range [0, 1] that determines the color position.
-    :param colors: List of RGB colors to interpolate through.
-    :return: Tuple of (R, G, B, A).
-    """
-    t = t % 1.0  # Wrap around to ensure looping
-    num_colors = len(colors)
-    pos = t * (num_colors - 1)  # Position in the color list
-
-    idx1 = int(pos)  # Lower bound index
-    idx2 = (idx1 + 1) % num_colors  # Upper bound index (looping)
-
-    blend = pos - idx1  # Blend factor between the two colors
-
-    # Linear interpolation between colors
-    r = int((1 - blend) * colors[idx1][0] + blend * colors[idx2][0])
-    g = int((1 - blend) * colors[idx1][1] + blend * colors[idx2][1])
-    b = int((1 - blend) * colors[idx1][2] + blend * colors[idx2][2])
-
-    return r, g, b, 255  # Always return full alpha
-
-def rainbow(time: float, speed: float = 1.0):
-    """
-    Generates a smooth rainbow effect based on the 'prism' colormap.
-
-    :param time: A floating-point number representing time.
-    :param speed: Speed multiplier for color cycling.
-    :return: Tuple of (R, G, B, A).
-    """
-    return interpolate_color(time * speed, PRISM_COLORS)
 
 Clock = sdlg.time.Clock()
 
@@ -78,11 +46,11 @@ class Player:
             self.y -= self.speed * Clock.delta
         if keys[sdlg.K_d]:
             self.x += self.speed * Clock.delta
-        self.color = rainbow(t.time(), 0.5)
+        #self.color = rainbow(t.time(), 0.2, 255)
 
 
 Sprites = []
-Player1 = Player((0, 0, 200, 200), (0, 255, 0, 255), 20)
+Player1 = Player((0, 0, 200, 200), (100, 100, 100, 255), 20)
 Player1.attachKeyboard()
 
 Sprites.append(Player1)
@@ -97,32 +65,50 @@ running = True
 FramesPerSecond = 0
 
 
+starting_time = t.time()
+
 fps = 0
 fps_per_second = 0
 last_fps_per_second = t.perf_counter()
 
-while running:
-    Clock.tick()
 
-    for e in sdlg.event.get():
-        if e.type == sdlg.QUIT: # QUIT
+def loop():
+    global running
+    while running:
+        Clock.tick()
+
+
+        #for e in sdlg.event.get():
+        #    if e.type == sdlg.QUIT: # QUIT
+        #        running = False
+
+
+        if t.time() > starting_time + 5:
             running = False
 
 
-  
-    Screen.fill((255,255,255,255))
-
-    for sprite in Sprites:
-        sprite: Player
-        sprite.main()
-        sprite.draw()
+        
+        Screen.fill((255,255,255,255))
 
 
-    print(f"FPS: {Clock.get_fps()}")
-    #print(Screen.get_fps())
-    sdlg.display.update()
+        for sprite in Sprites:
+            sprite: Player
+            sprite.main()
+            sprite.draw()
 
-    
+
+
+
+        print(f"FPS: {Clock.get_fps()}")
+        #print(Screen.get_fps())
+        sdlg.display.update()
+
+import cProfile
+cProfile.run('loop()', filename='profile_results.prof')
+
+if __name__ == "__main__":
+    loop()
+
 
 
 sdlg.quit()

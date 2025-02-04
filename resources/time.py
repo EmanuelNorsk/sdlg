@@ -1,19 +1,21 @@
 import time as t
+import sdl3
 
 class Clock:
     def __init__(self):
-        self.time = t.perf_counter()
-        self.last_time = self.time
-        self.delta = 0.0
+        self.time = sdl3.SDL_GetPerformanceCounter()
+        self.last_time = sdl3.SDL_GetPerformanceCounter()
+
+        self.freq = sdl3.SDL_GetPerformanceFrequency()
+
 
     def tick(self):
         self.last_time = self.time
-        self.time = t.perf_counter()
-        self.delta = (self.time - self.last_time)
 
 
     def get_fps(self):
-        fps = round(1 / (self.time - self.last_time))
-        return fps
+        self.time = sdl3.SDL_GetPerformanceCounter()
+        return round(1 / ((self.time - self.last_time) / self.freq))
+
         
  
