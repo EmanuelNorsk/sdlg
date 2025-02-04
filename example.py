@@ -46,7 +46,7 @@ class Player:
             self.y -= self.speed * Clock.delta
         if keys[sdlg.K_d]:
             self.x += self.speed * Clock.delta
-        #self.color = rainbow(t.time(), 0.2, 255)
+        self.color = rainbow(t.time(), 0.2, 255)
 
 
 Sprites = []
