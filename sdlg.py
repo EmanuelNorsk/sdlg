@@ -57,7 +57,7 @@ class Display:
     def set_mode(self, size, flags = 0):
         self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), ctypes.c_ulonglong(flags))
         print([sdl3.SDL_GetRenderDriver(x) for x in range(sdl3.SDL_GetNumRenderDrivers())])
-        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"vulkan")
+        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"opengl")
         self.size = size
         self.innerSize = size
         return self

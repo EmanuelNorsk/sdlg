@@ -25,10 +25,11 @@ class Clock:
                 self.draw = 0
 
 
-        self.last_time = self.time
+        #self.last_time = self.time
 
 
     def get_fps(self):
+        self.last_time = self.time
         self.time = sdl3.SDL_GetPerformanceCounter()
         return round(1 / ((self.time - self.last_time) / self.freq))
 
