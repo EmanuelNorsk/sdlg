@@ -26,14 +26,14 @@ class Cache():
                     value["callback"](value["cached"])
                 del self.cache[key]
                 return None
-            
+
             self.cache[key]["time"] = date
-        
+
             return value["cached"]
-    
+
         else:
             return None
-    
+
     def set(self, key, value, **kwargs):
         dict = {"time":t.time(), "cached":value, "save":kwargs.get("save", False), "callback":kwargs.get("callback",None)}
         self.cache[key] = dict
@@ -77,18 +77,18 @@ class Display:
     def scaleWindow(self, scale: bool):
         self.scale: bool = scale
         if scale:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(self.size[0]), ctypes.c_long(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)  
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(self.size[0]), ctypes.c_long(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)
         else:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(self.size[0]), ctypes.c_long(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)                
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(self.size[0]), ctypes.c_long(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)
 
-    def setInnerSize(self, size: tuple):  
+    def setInnerSize(self, size: tuple):
         self.innerSize = size
         if self.scale:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)  
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)
         else:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)   
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)
 
-    
+
 class Draw:
     def __init__(self):
         pass
@@ -120,9 +120,9 @@ class Draw:
         else:
 
             texture = sdl3.SDL_CreateTexture(
-                screen.renderer, 
-                sdl3.SDL_PIXELFORMAT_RGBA8888, 
-                sdl3.SDL_TEXTUREACCESS_TARGET, 
+                screen.renderer,
+                sdl3.SDL_PIXELFORMAT_RGBA8888,
+                sdl3.SDL_TEXTUREACCESS_TARGET,
                 rect_values[2], rect_values[3]
             )
 
@@ -155,7 +155,7 @@ class Draw:
             #sdl3.SDL_DestroyTexture(texture)
 
         return None
-        
+
 
 
 class Event:
@@ -194,7 +194,7 @@ class Key:
 
     def get_pressed(self):
         return sdl3.SDL_GetKeyboardState(None)
-    
+
 
 
 
