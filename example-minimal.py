@@ -1,17 +1,8 @@
-from sdlg import (
-    init,
-    display,
-    RESIZABLE,
-    t,
-    event,
-    QUIT,
-    draw,
-    key,
-    K_w,
-)
+import sdlg
+import time as t
 
-init()
-Screen = display.set_mode((640, 480), RESIZABLE)
+sdlg.init()
+Screen = sdlg.display.set_mode((640, 480), sdlg.RESIZABLE)
 started = t.perf_counter()
 running = True
 
@@ -21,13 +12,12 @@ last_fps_per_second = t.perf_counter()
 
 while running:
 
-    for e in event.get():
-        if e.type == QUIT:
+    for e in sdlg.event.get():
+        if e.type == sdlg.QUIT:
             running = False
 
     Screen.fill((255,255,255,255))
-    draw.rect(Screen, (0,0,0,255), (100, 100, 100, 100))
-
+    sdlg.draw.rect(Screen, (0,0,0,255), (100, 100, 100, 100))
 
     fps += 1
     if last_fps_per_second + 1 <= t.perf_counter():
@@ -36,10 +26,10 @@ while running:
         fps = 0
         print(f"FPS: {fps_per_second}")
 
-    keys = key.get_pressed()
-    if keys[K_w]:
+    keys = sdlg.key.get_pressed()
+    if keys[sdlg.K_w]:
         print("Key W Pressed!")
 
-    display.update()
+    sdlg.display.update()
 
 quit()
