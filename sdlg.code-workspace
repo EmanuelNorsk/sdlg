@@ -19,6 +19,7 @@
 			"pygame",
 			"pyproject",
 			"pysdl",
+			"pytest",
 			"RALT",
 			"RCTRL",
 			"RIGHTBRACKET",

@@ -27,8 +27,8 @@ classifiers = [
 dependencies = ['pysdl3', 'psutil']
 
 [project.optional-dependencies]
-dev = []
-test = []
+dev = ["pytest"]
+test = ["pytest"]
 
 [project.urls]
 "Homepage" = "https://github.com/EmanuelNorsk/sdlg"
