@@ -23,8 +23,8 @@ def get_seconds():
 
 class Clock:
     def __init__(self):
-        self.time = sdl3.SDL_GetPerformanceCounter()
         self.last_time = sdl3.SDL_GetPerformanceCounter()
+        self.time = sdl3.SDL_GetPerformanceCounter()
         self.freq = sdl3.SDL_GetPerformanceFrequency()
         self.delta = 0
         self.maxFPS = -1
