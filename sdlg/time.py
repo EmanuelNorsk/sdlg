@@ -40,6 +40,7 @@ class Clock:
     Attributes:
     _cycle: Current time in platform-specific increments
     _freq: platform-specific increments per second
+    draw: (sdlg-specific) 1 of tick delayed, 0 if it did not.
     """
     def __init__(self):
         self._first_cycles = sdl3.SDL_GetPerformanceCounter()
@@ -56,7 +57,7 @@ class Clock:
         self._to_ms_div = int(self._freq // 1_000)
         assert self._to_ms_div > 0, "NotImplementedError: _to_ms_fac for course platform timer"
         self._max_fps = -1
-        # self.elapsed = 0
+        self._elapsed_cycles = 0
         self._paused_cycles = 0
         self.draw = 1
 
@@ -85,11 +86,10 @@ class Clock:
                 sdl3.SDL_DelayPrecise(delay_ns)
                 self._cycle = sdl3.SDL_GetPerformanceCounter()
                 self._delta_cycles = self._raw_delta_cycles + delay_cycles
-                # self.elapsed += self.delta
                 self.draw = 1
             else:
-                # self.elapsed -= (1 / self.maxFPS)
                 self.draw = 0
+        self._elapsed_cycles += self._delta_cycles
         self._deltas[self._delta_idx] = self._delta_cycles
         self._delta_idx += 1
         if self._delta_idx >= len(self._deltas):
@@ -132,3 +132,10 @@ class Clock:
         (sdlg-specific)
         """
         return self._delta_cycles / self._freq
+
+    def elapsed_seconds(self):
+        """Get all time elapsed since started, in seconds.
+
+        (sdlg-specific)
+        """
+        return self._elapsed_cycles / self._freq
