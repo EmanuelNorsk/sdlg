@@ -38,6 +38,12 @@ class Clock:
         self.time = sdl3.SDL_GetPerformanceCounter()
         self.freq = sdl3.SDL_GetPerformanceFrequency()
         self._to_ns_div = int(self.freq // 1_000_000_000)
+        self._to_ns_fac = 1_000_000_000 / self.freq
+        if self._to_ns_div == 0:
+            # Prevent divide by zero in case of coarse frequency
+            self._to_ns_div = None
+            self._to_ns_fac = 1_000_000_000 // self.freq
+        # else default to clean integer division.
         self._to_ms_div = int(self.freq // 1_000)
         self.delta = 0
         self.maxFPS = -1
@@ -57,7 +63,10 @@ class Clock:
         self.delta = ((self.time - self.last_time) / self.freq)
         if self.maxFPS > 0:
             if self.delta < (1 / self.maxFPS):
-                delta_ns = int(self.time - self.last_time) // self._to_ns_div
+                if self._to_ns_div:
+                    delta_ns = int(self.time - self.last_time) // self._to_ns_div
+                else:
+                    delta_ns = int(self.time - self.last_time) * self._to_ns_fac
                 ns_per_frame = int(1_000_000_000 // framerate)
                 delay_ns = int(ns_per_frame - delta_ns)
                 sdl3.SDL_DelayPrecise(delay_ns)
