@@ -1,7 +1,7 @@
 import sdl3
 import ctypes
 import time as t
-import resources.time as time
+import sdlg.resources.time as time
 
 import psutil, os
 p = psutil.Process(os.getpid())
