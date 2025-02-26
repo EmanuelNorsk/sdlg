@@ -6,10 +6,12 @@ Same syntax as Pygame, but added features:
 * Screen.setInnerSize(Tuple(width, height)) - Set's the internal size of the window. It is a reference to how much the screen should scale. Does nothing if Screen.scaleWindow is set to False.
 """
 import colorsys
-#import pygame as sdlg
 # import random
-import sdlg
 import time as t
+
+#import pygame as sdlg
+import sdlg
+import sdlg.time
 
 
 def rainbow(time, speed, opacity = 255):

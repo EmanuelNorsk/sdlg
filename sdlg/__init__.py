@@ -1,229 +1,53 @@
-import sdl3
+from __future__ import division
+
 import ctypes
 import os
 import platform
-import psutil
 import time as t
 
-import sdlg.resources.time as time
+import psutil
+import sdl3
+
+from sdlg._display import _Display
+from sdlg._draw import _Draw
+from sdlg._key import _Key
+from sdlg.event import _Events
 
 p = psutil.Process(os.getpid())
 p.cpu_affinity([0, 1])
 
 startup_time = t.time()
 
-SDL_int = int
+_start_perf_count = None  # arbitrary frequency, see get_seconds
+_perf_to_ms_divisor = None  # Fixed after SDL_Init
+
+
 if platform.system() == "Windows":
     ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00000080)  # HIGH_PRIORITY_CLASS
-    # SDL_int = ctypes.c_long  # Not sure why this was being used, so sticking it here
-
-class Cache():
-    def __init__(self, **kwargs):
-        self.cache = {}
-        self.lifespan = 15
-
-    def get(self, key):
-        value = self.cache.get(key, None)
-        date = t.time()
-        if value:
-            if value["time"] + self.lifespan < date and not value["save"]:
-                if value["callback"]:
-                    value["callback"](value["cached"])
-                del self.cache[key]
-                return None
-
-            self.cache[key]["time"] = date
-
-            return value["cached"]
-
-        else:
-            return None
-
-    def set(self, key, value, **kwargs):
-        dict = {"time":t.time(), "cached":value, "save":kwargs.get("save", False), "callback":kwargs.get("callback",None)}
-        self.cache[key] = dict
-
-
-
-def destroy_texture(texture):
-    sdl3.SDL_DestroyTexture(texture)
-
-cache = Cache()
-
-class Display:
-    def __init__(self):
-        self.window = sdl3.SDL_Window
-        self.renderer = sdl3.SDL_Renderer
-        self.draw_system = 0
-        self.scale = False
-        self.size = (0, 0)
-        self.innerSize = (0, 0)
-
-    def set_mode(self, size, flags = 0):
-        self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", SDL_int(size[0]), SDL_int(size[1]), ctypes.c_ulonglong(flags))
-        print([sdl3.SDL_GetRenderDriver(x) for x in range(sdl3.SDL_GetNumRenderDrivers())])
-        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"opengl")
-        self.size = size
-        self.innerSize = size
-        return self
-    def fill(self, rgba):
-        sdl3.SDL_SetRenderDrawColor(self.renderer, ctypes.c_ubyte(rgba[0]), ctypes.c_ubyte(rgba[1]), ctypes.c_ubyte(rgba[2]), ctypes.c_ubyte(rgba[3]))
-        sdl3.SDL_RenderClear(self.renderer)
-    def flip(self):
-        sdl3.SDL_RenderPresent(self.renderer)
-    def update(self):
-        sdl3.SDL_RenderPresent(self.renderer)
-    def cartesian_coordinate_system(self, bool):
-        if bool:
-            self.draw_system = 1
-        else:
-            self.draw_system = 0
-
-    def scaleWindow(self, scale: bool):
-        self.scale: bool = scale
-        if scale:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, SDL_int(self.size[0]), SDL_int(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)
-        else:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, SDL_int(self.size[0]), SDL_int(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)
-
-    def setInnerSize(self, size: tuple):
-        self.innerSize = size
-        if self.scale:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, SDL_int(size[0]), SDL_int(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)
-        else:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, SDL_int(size[0]), SDL_int(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)
-
-
-class Draw:
-    def __init__(self):
-        pass
-
-
-    def rect(self, screen: Display, color, rect_values, width = 0):
-
-        global cache
-        sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
-
-        cached_texture = cache.get(f"rect:{rect_values[2]}:{rect_values[3]}:{width}:{color}")
-
-        #print(cached_texture)
-
-        rectXInt = int(rect_values[0])
-        rectYInt = int(rect_values[1])
-        rect = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
-        if screen.draw_system == 0:
-            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt)), ctypes.c_float((rectYInt)), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
-        else:
-            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt - rect_values[2] / 2 + screen.innerSize[0] / 2)), ctypes.c_float((-rectYInt - rect_values[3] / 2 + screen.innerSize[1] / 2)), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
-
-        if cached_texture:
-
-            sdl3.SDL_SetTextureColorMod(cached_texture, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]))
-            sdl3.SDL_RenderTexture(screen.renderer, cached_texture, rect, rectFinal)
-            error = sdl3.SDL_GetError()
-            if error:
-                print(error)
-        else:
-
-            texture = sdl3.SDL_CreateTexture(
-                screen.renderer,
-                sdl3.SDL_PIXELFORMAT_RGBA8888,
-                sdl3.SDL_TEXTUREACCESS_TARGET,
-                rect_values[2], rect_values[3]
-            )
-
-            sdl3.SDL_SetRenderTarget(screen.renderer, texture)
-            sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(0), ctypes.c_ubyte(0), ctypes.c_ubyte(0), ctypes.c_ubyte(0))
-            sdl3.SDL_RenderClear(screen.renderer)
-
-            sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
-
-            if width == 0:
-                rect1 = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float(rect_values[2]), ctypes.c_float(rect_values[3]))
-
-                sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect1))
-            else:
-                rect1 = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float(width), ctypes.c_float(rect_values[3]))
-                rect2 = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float(rect_values[2]), ctypes.c_float(width))
-                rect3 = sdl3.SDL_FRect(ctypes.c_float((rect_values[2] - width)), ctypes.c_float(0), ctypes.c_float(width), ctypes.c_float(rect_values[3]))
-                rect4 = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float((rect_values[3] - width)), ctypes.c_float(rect_values[2]), ctypes.c_float(width))
-
-                sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect1))
-                sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect2))
-                sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect3))
-                sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect4))
-
-            sdl3.SDL_SetRenderTarget(screen.renderer, None)
-            sdl3.SDL_RenderTexture(screen.renderer, texture, rect, rectFinal)
-
-            cache.set(f"rect:{rect_values[2]}:{rect_values[3]}:{width}:{color}", texture, callback=destroy_texture)
-
-            #sdl3.SDL_DestroyTexture(texture)
-
-        return None
-
-
-
-class Event:
-    def __init__(self, type):
-        self.type = type
-
-class Events:
-    def __init__(self):
-        """
-        Handles SDL events by wrapping them in Python-friendly objects.
-        """
-        # Create an SDL_Event structure
-        self.sdl_event = sdl3.SDL_Event()
-        self.started = t.time() + 0.1
-
-    def get(self):
-        """
-        Retrieves all SDL events and returns them as Event objects.
-
-        Returns:
-            list[Event]: A list of Event objects.
-        """
-        sdl3.SDL_PumpEvents()
-        event_list = []
-        while sdl3.SDL_PollEvent(self.sdl_event):
-            event = Event(self.sdl_event.type)
-            event_list.append(event)
-        return event_list
-
-
-
-
-class Key:
-    def __init__(self):
-        pass
-
-    def get_pressed(self):
-        return sdl3.SDL_GetKeyboardState(None)
-
-
-
-
 
 
 def init():
+    global _start_perf_count
+    global _perf_to_ms_divisor
     sdl3.SDL_Init(sdl3.SDL_INIT_VIDEO | sdl3.SDL_INIT_EVENTS | sdl3.SDL_INIT_AUDIO)
+    _perf_to_ms_divisor = sdl3.SDL_GetPerformanceFrequency() / 1000
+    _start_perf_count = sdl3.SDL_GetPerformanceCounter()
+
 
 def quit():
     sdl3.SDL_DestroyRenderer(display.renderer)
     sdl3.SDL_DestroyWindow(display.window)
     sdl3.SDL_Quit()
 
-display = Display()
-event = Events()
-draw = Draw()
-key = Key()
+
+display = _Display()
+event = _Events()
+draw = _Draw()
+key = _Key()
 
 RESIZABLE = sdl3.SDL_WINDOW_RESIZABLE
 QUIT = sdl3.SDL_EVENT_QUIT
 VIDEORESIZE = sdl3.SDL_EVENT_WINDOW_RESIZED
-
-
 
 
 # Letters
@@ -311,7 +135,3 @@ K_SPACE = sdl3.SDL_SCANCODE_SPACE
 K_RETURN = sdl3.SDL_SCANCODE_RETURN
 K_BACKSPACE = sdl3.SDL_SCANCODE_BACKSPACE
 K_ESCAPE = sdl3.SDL_SCANCODE_ESCAPE
-
-
-
-
