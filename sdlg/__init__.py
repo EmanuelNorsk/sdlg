@@ -18,12 +18,22 @@ p.cpu_affinity([0, 1])
 
 startup_time = t.time()
 
+
 _start_perf_count = None  # arbitrary frequency, see get_seconds
 _perf_to_ms_divisor = None  # Fixed after SDL_Init
 
 
 if platform.system() == "Windows":
     ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00000080)  # HIGH_PRIORITY_CLASS
+
+
+# Can't be None, otherwise can't be imported by reference, so:
+def perf_to_ms_divisor():
+    return _perf_to_ms_divisor
+
+
+def start_perf_count():
+    return _start_perf_count
 
 
 def init():

@@ -18,6 +18,7 @@
 			"LALT",
 			"LCTRL",
 			"LEFTBRACKET",
+			"numpy",
 			"opengl",
 			"PIXELFORMAT",
 			"psutil",
