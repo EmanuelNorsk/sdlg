@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"rewrap.wrappingColumn": 72,
+		"cSpell.words": [
+			"CAPSLOCK",
+			"LALT",
+			"LCTRL",
+			"LEFTBRACKET",
+			"opengl",
+			"PIXELFORMAT",
+			"RALT",
+			"RCTRL",
+			"RIGHTBRACKET",
+			"SCANCODE",
+			"sdlg",
+			"TEXTUREACCESS",
+			"ulonglong",
+			"VIDEORESIZE"
+		]
+	}
+}
