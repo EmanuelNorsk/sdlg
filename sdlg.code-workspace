@@ -1,0 +1,40 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.testing.pytestArgs": [
+			"tests"
+		],
+		"python.testing.unittestEnabled": false,
+		"python.testing.pytestEnabled": true,
+		"rewrap.wrappingColumn": 72,
+		"cSpell.words": [
+			"CAPSLOCK",
+			"getpid",
+			"Hesselroth",
+			"LALT",
+			"LCTRL",
+			"LEFTBRACKET",
+			"numpy",
+			"opengl",
+			"PIXELFORMAT",
+			"psutil",
+			"pygame",
+			"pyproject",
+			"pysdl",
+			"pytest",
+			"RALT",
+			"RCTRL",
+			"RIGHTBRACKET",
+			"SCANCODE",
+			"sdlg",
+			"setuptools",
+			"TEXTUREACCESS",
+			"ulonglong",
+			"VIDEORESIZE"
+		]
+	}
+}
