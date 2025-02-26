@@ -7,7 +7,7 @@ Same syntax as Pygame, but added features:
 """
 import colorsys
 #import pygame as sdlg
-import random
+# import random
 import sdlg
 import time as t
 
