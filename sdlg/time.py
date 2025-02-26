@@ -66,7 +66,7 @@ class Clock:
                 if self._to_ns_div:
                     delta_ns = int(self.time - self.last_time) // self._to_ns_div
                 else:
-                    delta_ns = int(self.time - self.last_time) * self._to_ns_fac
+                    delta_ns = int(int(self.time - self.last_time) * self._to_ns_fac)
                 ns_per_frame = int(1_000_000_000 // framerate)
                 delay_ns = int(ns_per_frame - delta_ns)
                 sdl3.SDL_DelayPrecise(delay_ns)
