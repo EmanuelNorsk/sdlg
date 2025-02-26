@@ -20,7 +20,7 @@ def rainbow(time, speed, opacity = 255):
     return (int(colors[0] * 255), int(colors[1] * 255), int(colors[2] * 255), opacity)
 
 
-Clock = sdlg.time.Clock()
+clock = sdlg.time.Clock()
 
 
 class Player:
@@ -48,13 +48,13 @@ class Player:
         global FramesPerSecond
         keys = sdlg.key.get_pressed()
         if keys[sdlg.K_w]:
-            self.y += self.speed * Clock.delta
+            self.y += self.speed * clock.get_seconds()
         if keys[sdlg.K_a]:
-            self.x -= self.speed * Clock.delta
+            self.x -= self.speed * clock.get_seconds()
         if keys[sdlg.K_s]:
-            self.y -= self.speed * Clock.delta
+            self.y -= self.speed * clock.get_seconds()
         if keys[sdlg.K_d]:
-            self.x += self.speed * Clock.delta
+            self.x += self.speed * clock.get_seconds()
         self.color = rainbow(t.time(), 0.2, 255)
 
 
@@ -84,7 +84,7 @@ last_fps_per_second = t.perf_counter()
 def loop():
     global running
     while running:
-        Clock.tick()
+        clock.tick()
 
         for e in sdlg.event.get():
             if e.type == sdlg.QUIT: # QUIT
@@ -97,7 +97,7 @@ def loop():
             sprite.main()
             sprite.draw()
 
-        print(f"FPS: {Clock.get_fps()}")
+        print(f"FPS: {clock.get_fps()}")
         #print(Screen.get_fps())
         sdlg.display.update()
 
