@@ -32,7 +32,11 @@ test = []
 
 [project.urls]
 "Homepage" = "https://github.com/EmanuelNorsk/sdlg"
-"Bug Reports" = "https://github.com/EmanuelNorsk/sdlg/issues"
+"Issues" = "https://github.com/EmanuelNorsk/sdlg/issues"
+"Source" = "https://github.com/EmanuelNorsk/sdlg/issues"
 
 [tool.setuptools]
-# No additional configurations specified
+# If there are data files included in your packages that need to be
+# installed, specify them here.
+# package-data = { "sdlg" = ["*.dat"] }
+# The package itself is automatically detected when using pyproject.toml.
