@@ -1,16 +1,21 @@
 import sdl3
 import ctypes
+import os
+import platform
+import psutil
 import time as t
+
 import sdlg.resources.time as time
 
-import psutil, os
 p = psutil.Process(os.getpid())
 p.cpu_affinity([0, 1])
 
 startup_time = t.time()
 
-ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00000080)  # HIGH_PRIORITY_CLASS
-
+SDL_int = int
+if platform.system() == "Windows":
+    ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00000080)  # HIGH_PRIORITY_CLASS
+    # SDL_int = ctypes.c_long  # Not sure why this was being used, so sticking it here
 
 class Cache():
     def __init__(self, **kwargs):
@@ -55,7 +60,7 @@ class Display:
         self.innerSize = (0, 0)
 
     def set_mode(self, size, flags = 0):
-        self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), ctypes.c_ulonglong(flags))
+        self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", SDL_int(size[0]), SDL_int(size[1]), ctypes.c_ulonglong(flags))
         print([sdl3.SDL_GetRenderDriver(x) for x in range(sdl3.SDL_GetNumRenderDrivers())])
         self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"opengl")
         self.size = size
@@ -77,16 +82,16 @@ class Display:
     def scaleWindow(self, scale: bool):
         self.scale: bool = scale
         if scale:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(self.size[0]), ctypes.c_long(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, SDL_int(self.size[0]), SDL_int(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)
         else:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(self.size[0]), ctypes.c_long(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, SDL_int(self.size[0]), SDL_int(self.size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)
 
     def setInnerSize(self, size: tuple):
         self.innerSize = size
         if self.scale:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, SDL_int(size[0]), SDL_int(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)
         else:
-            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)
+            sdl3.SDL_SetRenderLogicalPresentation(self.renderer, SDL_int(size[0]), SDL_int(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)
 
 
 class Draw:

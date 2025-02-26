@@ -81,7 +81,7 @@ def loop():
         for e in sdlg.event.get():
             if e.type == sdlg.QUIT: # QUIT
                 running = False
-        
+
         Screen.fill((255,255,255,255))
 
 
