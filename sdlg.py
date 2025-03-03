@@ -4,6 +4,19 @@ import time as t
 import resources.time as time
 
 import psutil, os
+import numpy as np
+
+def sin_and_cos():
+
+
+    angles = np.arange(360)  # Array of angles from 0 to 359
+    radians = np.deg2rad(angles)  # Convert degrees to radians
+
+    return np.sin(radians), np.cos(radians)
+
+sin_values, cos_values = sin_and_cos()
+
+
 p = psutil.Process(os.getpid())
 p.cpu_affinity([0, 1])
 
@@ -93,10 +106,60 @@ class Draw:
     def __init__(self):
         pass
 
+    def point(self, screen):
+        sdl3.SDL_RenderPoint(screen.renderer, ctypes.c_float(100), ctypes.c_float(100))
+
+    def ellipse(self, screen: Display, color, rect_values, width = 0):
+
+        cached_texture = cache.get(f"ellipse:{rect_values[2]}:{rect_values[3]}:{width}:{color}")
+
+        sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
+
+
+        rect = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float((rect_values[2] * 2 + width)), ctypes.c_float((rect_values[3] * 2 + width)))
+        rectFinal = sdl3.SDL_FRect(ctypes.c_float((rect_values[0])), ctypes.c_float((rect_values[1])), ctypes.c_float((rect_values[2] * 2 + width)), ctypes.c_float((rect_values[3] * 2 + width)))
+        
+
+        if cached_texture:
+            sdl3.SDL_SetTextureColorMod(cached_texture, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]))
+            sdl3.SDL_RenderTexture(screen.renderer, cached_texture, rect, rectFinal)
+            error = sdl3.SDL_GetError()
+            if error: print(error)
+            return None
+        else:
+            texture = sdl3.SDL_CreateTexture(
+                    screen.renderer, 
+                    sdl3.SDL_PIXELFORMAT_RGBA8888, 
+                    sdl3.SDL_TEXTUREACCESS_TARGET, 
+                    (rect_values[2] * 2 + width), (rect_values[3] * 2 + width)
+                )  
+            
+            sdl3.SDL_SetRenderTarget(screen.renderer, texture)
+            sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(0), ctypes.c_ubyte(0), ctypes.c_ubyte(0), ctypes.c_ubyte(0))
+            sdl3.SDL_RenderClear(screen.renderer)
+            sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
+            if width > 0:
+                for x in range(360):
+                    rect1 = sdl3.SDL_FRect(ctypes.c_float(((rect_values[2] - width) * ((cos_values[x] + 1) / 2))), ctypes.c_float(((rect_values[3] - width) * ((sin_values[x] + 1) / 2))), ctypes.c_float(width), ctypes.c_float(width))
+                    sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect1))
+            else:
+                pass
+                #for x in range(rect_values[1]):
+                #    rect1 = sdl3.SDL_FRect(ctypes.c_float(((rect_values[2] - width) * ((cos_values[x] + 1) / 2))), ctypes.c_float(((rect_values[3] - width) * ((sin_values[x] + 1) / 2))), ctypes.c_float(width), ctypes.c_float(width))
+                #    sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect1))
+                
+            sdl3.SDL_SetRenderTarget(screen.renderer, None)
+
+            
+            sdl3.SDL_RenderTexture(screen.renderer, texture, rect, rectFinal)
+
+            cache.set(f"ellipse:{rect_values[2]}:{rect_values[3]}:{width}:{color}", texture, callback=destroy_texture)
+
+            #sdl3.SDL_DestroyTexture(texture)
+
+
 
     def rect(self, screen: Display, color, rect_values, width = 0):
-
-        global cache
         sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
 
         cached_texture = cache.get(f"rect:{rect_values[2]}:{rect_values[3]}:{width}:{color}")
@@ -107,7 +170,7 @@ class Draw:
         rectYInt = int(rect_values[1])
         rect = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
         if screen.draw_system == 0:
-            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt)), ctypes.c_float((rectYInt)), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
+            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt)), ctypes.c_float((rectYInt)), ctypes.c_float((rect_values[2] * 2)), ctypes.c_float((rect_values[3] * 2)))
         else:
             rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt - rect_values[2] / 2 + screen.innerSize[0] / 2)), ctypes.c_float((-rectYInt - rect_values[3] / 2 + screen.innerSize[1] / 2)), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
 
