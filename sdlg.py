@@ -68,9 +68,9 @@ class Display:
         self.innerSize = (0, 0)
 
     def set_mode(self, size, flags = 0):
-        self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), ctypes.c_ulonglong(flags))
+        self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), flags)
         print([sdl3.SDL_GetRenderDriver(x) for x in range(sdl3.SDL_GetNumRenderDrivers())])
-        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"opengl")
+        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"software")
         self.size = size
         self.innerSize = size
         return self
@@ -120,7 +120,7 @@ class Draw:
         rectFinal = sdl3.SDL_FRect(ctypes.c_float((rect_values[0])), ctypes.c_float((rect_values[1])), ctypes.c_float((rect_values[2] * 2 + width)), ctypes.c_float((rect_values[3] * 2 + width)))
         
 
-        if cached_texture:
+        if cached_texture and 1 == 2:
             sdl3.SDL_SetTextureColorMod(cached_texture, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]))
             sdl3.SDL_RenderTexture(screen.renderer, cached_texture, rect, rectFinal)
             error = sdl3.SDL_GetError()
@@ -131,23 +131,25 @@ class Draw:
                     screen.renderer, 
                     sdl3.SDL_PIXELFORMAT_RGBA8888, 
                     sdl3.SDL_TEXTUREACCESS_TARGET, 
-                    (rect_values[2] * 2 + width), (rect_values[3] * 2 + width)
+                    rect_values[2], rect_values[3]
                 )  
             
             sdl3.SDL_SetRenderTarget(screen.renderer, texture)
             sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(0), ctypes.c_ubyte(0), ctypes.c_ubyte(0), ctypes.c_ubyte(0))
             sdl3.SDL_RenderClear(screen.renderer)
             sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
-            if width > 0:
-                for x in range(360):
-                    rect1 = sdl3.SDL_FRect(ctypes.c_float(((rect_values[2] - width) * ((cos_values[x] + 1) / 2))), ctypes.c_float(((rect_values[3] - width) * ((sin_values[x] + 1) / 2))), ctypes.c_float(width), ctypes.c_float(width))
-                    sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect1))
-            else:
-                pass
-                #for x in range(rect_values[1]):
-                #    rect1 = sdl3.SDL_FRect(ctypes.c_float(((rect_values[2] - width) * ((cos_values[x] + 1) / 2))), ctypes.c_float(((rect_values[3] - width) * ((sin_values[x] + 1) / 2))), ctypes.c_float(width), ctypes.c_float(width))
-                #    sdl3.SDL_RenderFillRect(screen.renderer, ctypes.byref(rect1))
-                
+
+
+            num_vertices = 3
+            vertices = (sdl3.SDL_Vertex * 3)(
+                sdl3.SDL_Vertex(sdl3.SDL_FPoint(0, 0), sdl3.SDL_FColor(1, 0, 0, 1)),
+                sdl3.SDL_Vertex(sdl3.SDL_FPoint(200, 100), sdl3.SDL_FColor(0, 1, 0, 1)),
+                sdl3.SDL_Vertex(sdl3.SDL_FPoint(0, 200), sdl3.SDL_FColor(0, 0, 1, 1)),
+            )
+
+            sdl3.SDL_RenderGeometry(screen.renderer, None, vertices, num_vertices, None, 0)
+
+
             sdl3.SDL_SetRenderTarget(screen.renderer, None)
 
             
