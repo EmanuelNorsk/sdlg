@@ -5,6 +5,8 @@ import resources.time as time
 
 import psutil, os
 import numpy as np
+import encache
+import sys
 
 def sin_and_cos():
 
@@ -13,6 +15,26 @@ def sin_and_cos():
     radians = np.deg2rad(angles)  # Convert degrees to radians
 
     return np.sin(radians), np.cos(radians)
+
+
+
+def bresenham_circle(radius):
+    x, y = 0, radius
+    d = 3 - 2 * radius
+    points = []
+    while y >= x:
+        points.extend([(x, y), (-x, y), (x, -y), (-x, -y),
+                       (y, x), (-y, x), (y, -x), (-y, -x)])
+        x += 1
+        if d > 0:
+            y -= 1
+            d += 4 * (x - y) + 10
+        else:
+            d += 4 * x + 6
+    return points
+
+
+
 
 sin_values, cos_values = sin_and_cos()
 
@@ -24,6 +46,8 @@ startup_time = t.time()
 
 ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00000080)  # HIGH_PRIORITY_CLASS
 
+def destroy_texture(texture):
+    sdl3.SDL_DestroyTexture(texture)
 
 class Cache():
     def __init__(self, **kwargs):
@@ -51,10 +75,6 @@ class Cache():
         dict = {"time":t.time(), "cached":value, "save":kwargs.get("save", False), "callback":kwargs.get("callback",None)}
         self.cache[key] = dict
 
-
-
-def destroy_texture(texture):
-    sdl3.SDL_DestroyTexture(texture)
 
 cache = Cache()
 
@@ -106,7 +126,7 @@ class Draw:
     def __init__(self):
         pass
 
-    def point(self, screen):
+    def point(self, screen: Display):
         sdl3.SDL_RenderPoint(screen.renderer, ctypes.c_float(100), ctypes.c_float(100))
 
     def ellipse(self, screen: Display, color, rect_values, width = 0):
@@ -139,16 +159,45 @@ class Draw:
             sdl3.SDL_RenderClear(screen.renderer)
             sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
 
+            fcolor = sdl3.SDL_FColor(color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255 if len(color) > 3 else 1)
 
-            num_vertices = 3
-            vertices = (sdl3.SDL_Vertex * 3)(
-                sdl3.SDL_Vertex(sdl3.SDL_FPoint(0, 0), sdl3.SDL_FColor(1, 0, 0, 1)),
-                sdl3.SDL_Vertex(sdl3.SDL_FPoint(200, 100), sdl3.SDL_FColor(0, 1, 0, 1)),
-                sdl3.SDL_Vertex(sdl3.SDL_FPoint(0, 200), sdl3.SDL_FColor(0, 0, 1, 1)),
+            #num_vertices = 3
+            #vertices = (sdl3.SDL_Vertex * 3)(
+            #    sdl3.SDL_Vertex(sdl3.SDL_FPoint(0, 0), sdl3.SDL_FColor(1, 0, 0, 1)),
+            #    sdl3.SDL_Vertex(sdl3.SDL_FPoint(200, 100), sdl3.SDL_FColor(0, 1, 0, 1)),
+            #    sdl3.SDL_Vertex(sdl3.SDL_FPoint(0, 200), sdl3.SDL_FColor(0, 0, 1, 1)),
+            #)
+            #
+            #sdl3.SDL_RenderGeometry(screen.renderer, None, vertices, num_vertices, None, 0)
+
+            center_x = int(rect_values[2] / 2)
+            center_y = int(rect_values[3] / 2)
+
+            points = bresenham_circle(center_x)
+
+
+
+
+            vertexes = [sdl3.SDL_Vertex(sdl3.SDL_FPoint((point[0] + center_x), (point[1] + center_y)), fcolor) for point in points]
+
+            
+
+            num_vertices = len(vertexes)
+            print(num_vertices)
+            vertices = (sdl3.SDL_Vertex * num_vertices)(
+                *vertexes
             )
+
 
             sdl3.SDL_RenderGeometry(screen.renderer, None, vertices, num_vertices, None, 0)
 
+            error = sdl3.SDL_GetError()
+            if error:
+                print(error, vertices, num_vertices)
+                sys.exit()
+                
+
+    
 
             sdl3.SDL_SetRenderTarget(screen.renderer, None)
 
