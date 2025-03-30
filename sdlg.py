@@ -134,34 +134,7 @@ ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess
 def destroy_texture(texture):
     sdl3.SDL_DestroyTexture(texture)
 
-class Cache():
-    def __init__(self, **kwargs):
-        self.cache = {}
-        self.lifespan = 15
-
-    def get(self, key):
-        value = self.cache.get(key, None)
-        date = t.time()
-        if value:
-            if value["time"] + self.lifespan < date and not value["save"]:
-                if value["callback"]:
-                    value["callback"](value["cached"])
-                del self.cache[key]
-                return None
-            
-            self.cache[key]["time"] = date
-        
-            return value["cached"]
-    
-        else:
-            return None
-    
-    def set(self, key, value, **kwargs):
-        dict = {"time":t.time(), "cached":value, "save":kwargs.get("save", False), "callback":kwargs.get("callback",None)}
-        self.cache[key] = dict
-
-
-cache = Cache()
+cache = encache.Cache()
 
 class Display:
     def __init__(self):
@@ -296,7 +269,8 @@ class Draw:
             
             sdl3.SDL_RenderTexture(screen.renderer, texture, rect, rectFinal)
 
-            cache.set(f"ellipse:{rect_values[2]}:{rect_values[3]}:{width}:{color}", texture, callback=destroy_texture)
+
+            cache.store(f"ellipse:{rect_values[2]}:{rect_values[3]}:{width}:{color}", texture, callback=destroy_texture)
 
             #sdl3.SDL_DestroyTexture(texture)
 
@@ -354,7 +328,7 @@ class Draw:
             sdl3.SDL_SetRenderTarget(screen.renderer, None)
             sdl3.SDL_RenderTexture(screen.renderer, texture, rect, rectFinal)
 
-            cache.set(f"rect:{rect_values[2]}:{rect_values[3]}:{width}:{color}", texture, callback=destroy_texture)
+            cache.store(f"rect:{rect_values[2]}:{rect_values[3]}:{width}:{color}", texture, callback=destroy_texture)
 
             #sdl3.SDL_DestroyTexture(texture)
 
