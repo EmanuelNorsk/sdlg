@@ -57,9 +57,9 @@ Sprites.append(Player1)
 
 sdlg.init()
 Screen = sdlg.display.set_mode((640, 360), sdlg.RESIZABLE)
-Screen.cartesian_coordinate_system(True)
-Screen.scaleWindow(True)
-Screen.setInnerSize((1280, 720))
+#Screen.cartesian_coordinate_system(True)
+#Screen.scaleWindow(True)
+#Screen.setInnerSize((1280, 720))
 started = t.perf_counter()
 running = True
 FramesPerSecond = 0
@@ -90,7 +90,8 @@ def loop():
             sprite.main()
             #sprite.draw()
 
-        sdlg.draw.ellipse(Screen, (255, 0, 0, 255), (0, 0, 400, 200), 0)
+        for x in range(100):
+            sdlg.draw.ellipse(Screen, (255, 0, 0, 255), (x, 0, 400, 200), 50)
 
 
         print(f"FPS: {Clock.get_fps()}")

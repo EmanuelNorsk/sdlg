@@ -52,6 +52,72 @@ def bresenham_ellipse(radius_x, radius_y):
     
     return triangles
 
+def bresenham_ellipse_with_border(radius_x, radius_y, border_width):
+    x, y = 0, radius_y
+    d = 3 - 2 * radius_y
+    edge_points = []
+    
+    # Step 1: Generate the ellipse edge points
+    while y >= x:
+        edge_points.extend([
+            (x * radius_x // radius_y, y), (-x * radius_x // radius_y, y),
+            (x * radius_x // radius_y, -y), (-x * radius_x // radius_y, -y),
+            (y * radius_x // radius_y, x), (-y * radius_x // radius_y, x),
+            (y * radius_x // radius_y, -x), (-y * radius_x // radius_y, -x)
+        ])
+        x += 1
+        if d > 0:
+            y -= 1
+            d += 4 * (x - y) + 10
+        else:
+            d += 4 * x + 6
+    
+    # Step 2: Sort points by angle to ensure correct order
+    edge_points = sorted(edge_points, key=lambda p: np.arctan2(p[1], p[0]))
+
+    small_radius_x = radius_x - border_width
+    small_radius_y = radius_y - border_width
+
+    x, y = 0, small_radius_y
+    d = 3 - 2 * small_radius_y
+    inner_points = []
+    
+    # Step 3: Generate the ellipse inner points
+    while y >= x:
+        inner_points.extend([
+            (x * small_radius_x // small_radius_y, y), (-x * small_radius_x // small_radius_y, y),
+            (x * small_radius_x // small_radius_y, -y), (-x * small_radius_x // small_radius_y, -y),
+            (y * small_radius_x // small_radius_y, x), (-y * small_radius_x // small_radius_y, x),
+            (y * small_radius_x // small_radius_y, -x), (-y * small_radius_x // small_radius_y, -x)
+        ])
+        x += 1
+        if d > 0:
+            y -= 1
+            d += 4 * (x - y) + 10
+        else:
+            d += 4 * x + 6
+    
+    # Step 4: Sort points by angle to ensure correct order
+    inner_points = sorted(inner_points, key=lambda p: np.arctan2(p[1], p[0]))
+
+
+    # Step 5: Generate triangle points
+    triangles = []
+
+    ratio = len(inner_points) / len(edge_points)
+    
+    for i in range(len(edge_points)):
+        p1 = edge_points[i]
+        p2 = edge_points[(i + 1) % len(edge_points)]  # Wrap around to close the ellipse
+
+        scale_i = int(i * ratio)
+
+        p3 = inner_points[scale_i]
+        p4 = inner_points[(scale_i + 1) % len(inner_points)]  # Wrap around to close the ellipse
+
+        triangles.extend([p1, p2, p3, p2, p3, p4])  # Flattened list instead of tuples
+    
+    return triangles
 
 
 
@@ -154,9 +220,13 @@ class Draw:
 
         sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
 
-
+        rectXInt = int(rect_values[0])
+        rectYInt = int(rect_values[1])
         rect = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float((rect_values[2] * 2 + width)), ctypes.c_float((rect_values[3] * 2 + width)))
-        rectFinal = sdl3.SDL_FRect(ctypes.c_float((rect_values[0])), ctypes.c_float((rect_values[1])), ctypes.c_float((rect_values[2] * 2 + width)), ctypes.c_float((rect_values[3] * 2 + width)))
+        if screen.draw_system == 0:
+            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt)), ctypes.c_float((rectYInt)), ctypes.c_float((rect_values[2] * 2)), ctypes.c_float((rect_values[3] * 2)))
+        else:
+            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt - rect_values[2] / 2 + screen.innerSize[0] / 2)), ctypes.c_float((-rectYInt - rect_values[3] / 2 + screen.innerSize[1] / 2)), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
         
 
         if cached_texture:
@@ -192,7 +262,11 @@ class Draw:
             center_x = rect_values[2] / 2
             center_y = rect_values[3] / 2
 
-            points = bresenham_ellipse(center_x, center_y)
+            if width > 0:
+                points = bresenham_ellipse_with_border(center_x, center_y, width)
+            else:
+                points = bresenham_ellipse(center_x, center_y)
+
             #points = []
 
             #for x in range(0, 360, 1):
