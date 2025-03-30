@@ -67,13 +67,14 @@ FramesPerSecond = 0
 
 starting_time = t.time()
 
+frames = 0
+count = 0
 fps = 0
-fps_per_second = 0
-last_fps_per_second = t.perf_counter()
+last_fps_per_second = t.time()
 
 
 def loop():
-    global running
+    global running, frames, count, fps, last_fps_per_second
     while running:
         Clock.tick()
 
@@ -90,11 +91,24 @@ def loop():
             sprite.main()
             #sprite.draw()
 
-        sdlg.draw.ellipse(Screen, (255, 0, 0, 255), (0, 0, 400, 200), 50)
+        for x in range(241):
+            sdlg.draw.ellipse(Screen, (255, 0, 0, 255), (x, 0, 400, 200), 50)
 
 
-        print(f"FPS: {Clock.get_fps()}")
-        #print(Screen.get_fps())
+        frames += Clock.get_fps()
+        count += 1
+
+        if last_fps_per_second + 1 <= t.time():
+            last_fps_per_second += 1
+            fps = frames / count
+
+            count = 0
+            frames = 0
+
+            print(f"FPS: {fps}")
+        
+
+        #print(f"FPS: {Clock.get_fps()}")
         sdlg.display.update()
 
 
