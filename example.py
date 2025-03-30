@@ -90,10 +90,10 @@ def loop():
             sprite.main()
             #sprite.draw()
 
-        sdlg.draw.ellipse(Screen, (255, 0, 0, 255), (0, 0, 400, 400), 0)
+        sdlg.draw.ellipse(Screen, (255, 0, 0, 255), (0, 0, 400, 200), 0)
 
 
-        #print(f"FPS: {Clock.get_fps()}")
+        print(f"FPS: {Clock.get_fps()}")
         #print(Screen.get_fps())
         sdlg.display.update()
 

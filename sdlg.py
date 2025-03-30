@@ -7,6 +7,7 @@ import psutil, os
 import numpy as np
 import encache
 import sys
+import math
 
 def sin_and_cos():
 
@@ -17,21 +18,39 @@ def sin_and_cos():
     return np.sin(radians), np.cos(radians)
 
 
-
-def bresenham_circle(radius):
-    x, y = 0, radius
-    d = 3 - 2 * radius
-    points = []
+def bresenham_ellipse(radius_x, radius_y):
+    x, y = 0, radius_y
+    d = 3 - 2 * radius_y
+    edge_points = []
+    
+    # Step 1: Generate the ellipse edge points
     while y >= x:
-        points.extend([(x, y), (-x, y), (x, -y), (-x, -y),
-                       (y, x), (-y, x), (y, -x), (-y, -x)])
+        edge_points.extend([
+            (x * radius_x // radius_y, y), (-x * radius_x // radius_y, y),
+            (x * radius_x // radius_y, -y), (-x * radius_x // radius_y, -y),
+            (y * radius_x // radius_y, x), (-y * radius_x // radius_y, x),
+            (y * radius_x // radius_y, -x), (-y * radius_x // radius_y, -x)
+        ])
         x += 1
         if d > 0:
             y -= 1
             d += 4 * (x - y) + 10
         else:
             d += 4 * x + 6
-    return points
+    
+    # Step 2: Sort points by angle to ensure correct order
+    edge_points = sorted(edge_points, key=lambda p: np.arctan2(p[1], p[0]))
+    
+    # Step 3: Generate triangle points
+    triangles = []
+    center = (0, 0)
+    
+    for i in range(len(edge_points)):
+        p1 = edge_points[i]
+        p2 = edge_points[(i + 1) % len(edge_points)]  # Wrap around to close the ellipse
+        triangles.extend([center, p1, p2])  # Flattened list instead of tuples
+    
+    return triangles
 
 
 
@@ -90,7 +109,7 @@ class Display:
     def set_mode(self, size, flags = 0):
         self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), flags)
         print([sdl3.SDL_GetRenderDriver(x) for x in range(sdl3.SDL_GetNumRenderDrivers())])
-        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"software")
+        self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"vulkan")
         self.size = size
         self.innerSize = size
         return self
@@ -140,7 +159,7 @@ class Draw:
         rectFinal = sdl3.SDL_FRect(ctypes.c_float((rect_values[0])), ctypes.c_float((rect_values[1])), ctypes.c_float((rect_values[2] * 2 + width)), ctypes.c_float((rect_values[3] * 2 + width)))
         
 
-        if cached_texture and 1 == 2:
+        if cached_texture:
             sdl3.SDL_SetTextureColorMod(cached_texture, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]))
             sdl3.SDL_RenderTexture(screen.renderer, cached_texture, rect, rectFinal)
             error = sdl3.SDL_GetError()
@@ -159,7 +178,7 @@ class Draw:
             sdl3.SDL_RenderClear(screen.renderer)
             sdl3.SDL_SetRenderDrawColor(screen.renderer, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]), ctypes.c_ubyte(color[3]))
 
-            fcolor = sdl3.SDL_FColor(color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255 if len(color) > 3 else 1)
+            
 
             #num_vertices = 3
             #vertices = (sdl3.SDL_Vertex * 3)(
@@ -170,10 +189,19 @@ class Draw:
             #
             #sdl3.SDL_RenderGeometry(screen.renderer, None, vertices, num_vertices, None, 0)
 
-            center_x = int(rect_values[2] / 2)
-            center_y = int(rect_values[3] / 2)
+            center_x = rect_values[2] / 2
+            center_y = rect_values[3] / 2
 
-            points = bresenham_circle(center_x)
+            points = bresenham_ellipse(center_x, center_y)
+            #points = []
+
+            #for x in range(0, 360, 1):
+            #    points.append((sin_values[x] * center_x, cos_values[x] * center_y))
+            #    points.append((sin_values[(x+1) % 360] * center_x, cos_values[(x+1) % 360] * center_y))
+            #    points.append((0, 0))
+
+
+            fcolor = sdl3.SDL_FColor(color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255 if len(color) > 3 else 1)
 
 
 
@@ -183,22 +211,13 @@ class Draw:
             
 
             num_vertices = len(vertexes)
-            print(num_vertices)
             vertices = (sdl3.SDL_Vertex * num_vertices)(
                 *vertexes
             )
 
 
             sdl3.SDL_RenderGeometry(screen.renderer, None, vertices, num_vertices, None, 0)
-
-            error = sdl3.SDL_GetError()
-            if error:
-                print(error, vertices, num_vertices)
-                sys.exit()
                 
-
-    
-
             sdl3.SDL_SetRenderTarget(screen.renderer, None)
 
             
