@@ -224,13 +224,12 @@ class Draw:
         rectYInt = int(rect_values[1])
         rect = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float((rect_values[2] * 2 + width)), ctypes.c_float((rect_values[3] * 2 + width)))
         if screen.draw_system == 0:
-            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt)), ctypes.c_float((rectYInt)), ctypes.c_float((rect_values[2] * 2)), ctypes.c_float((rect_values[3] * 2)))
+            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt)), ctypes.c_float((rectYInt)), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
         else:
             rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt - rect_values[2] / 2 + screen.innerSize[0] / 2)), ctypes.c_float((-rectYInt - rect_values[3] / 2 + screen.innerSize[1] / 2)), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
         
 
         if cached_texture:
-            sdl3.SDL_SetTextureColorMod(cached_texture, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]))
             sdl3.SDL_RenderTexture(screen.renderer, cached_texture, rect, rectFinal)
             error = sdl3.SDL_GetError()
             if error: print(error)
@@ -314,13 +313,11 @@ class Draw:
         rectYInt = int(rect_values[1])
         rect = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
         if screen.draw_system == 0:
-            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt)), ctypes.c_float((rectYInt)), ctypes.c_float((rect_values[2] * 2)), ctypes.c_float((rect_values[3] * 2)))
+            rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt)), ctypes.c_float((rectYInt)), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
         else:
             rectFinal = sdl3.SDL_FRect(ctypes.c_float((rectXInt - rect_values[2] / 2 + screen.innerSize[0] / 2)), ctypes.c_float((-rectYInt - rect_values[3] / 2 + screen.innerSize[1] / 2)), ctypes.c_float((rect_values[2])), ctypes.c_float((rect_values[3])))
 
         if cached_texture:
-
-            sdl3.SDL_SetTextureColorMod(cached_texture, ctypes.c_ubyte(color[0]), ctypes.c_ubyte(color[1]), ctypes.c_ubyte(color[2]))
             sdl3.SDL_RenderTexture(screen.renderer, cached_texture, rect, rectFinal)
             error = sdl3.SDL_GetError()
             if error: print(error)
