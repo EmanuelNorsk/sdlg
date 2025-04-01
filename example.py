@@ -65,6 +65,16 @@ running = True
 FramesPerSecond = 0
 
 
+testImage = sdlg.image.load("testImages/image.png")
+testImageRect = testImage.get_rect(center=(100, 100))
+
+testImageRect.topleft = (0, 0)
+
+print(testImageRect)
+
+
+testImage2 = sdlg.image.load("testImages/Sunflower.png")
+
 starting_time = t.time()
 
 frames = 0
@@ -94,6 +104,8 @@ def loop():
         for x in range(241):
             sdlg.draw.ellipse(Screen, (255, 0, 0, 255), (x, 0, 400, 200), 50)
 
+        Screen.blit(testImage, testImageRect)
+        Screen.blit(testImage2, (200, 200))
 
         frames += Clock.get_fps()
         count += 1

@@ -9,6 +9,10 @@ import encache
 import sys
 import math
 
+import resources.rect as rect
+
+import resources.image as sdlg_image
+
 def sin_and_cos():
 
 
@@ -136,6 +140,26 @@ def destroy_texture(texture):
 
 cache = encache.Cache()
 
+            
+
+class Surface:
+    def __init__(self, texture: sdl3.SDL_Texture):
+        self.texture = texture
+        width, height = ctypes.c_float(0), ctypes.c_float(0)
+        sdl3.SDL_GetTextureSize(self.texture, ctypes.byref(width), ctypes.byref(height))
+        self.rect = rect.Rect(0, 0, width.value, height.value)
+
+        self.size = (width, height)
+
+        self.textureRect = sdl3.SDL_FRect(ctypes.c_float(0), ctypes.c_float(0), width, height)
+
+
+    def get_rect(self, **kwargs):
+        if kwargs.get("center", None):
+            hWidth, hHeight = self.size[0].value / 2, self.size[1].value / 2
+            self.rect = rect.Rect(kwargs["center"][0] - hWidth, kwargs["center"][1] - hHeight, self.size[0].value, self.size[1].value)
+        return self.rect
+    
 class Display:
     def __init__(self):
         self.window = sdl3.SDL_Window
@@ -144,11 +168,13 @@ class Display:
         self.scale = False
         self.size = (0, 0)
         self.innerSize = (0, 0)
+        self.image: Image = Image(self)
 
     def set_mode(self, size, flags = 0):
         self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), flags)
         print([sdl3.SDL_GetRenderDriver(x) for x in range(sdl3.SDL_GetNumRenderDrivers())])
         self.renderer: sdl3.SDL_Renderer = sdl3.SDL_CreateRenderer(self.window, b"vulkan")
+        self.image.renderer = self.renderer
         self.size = size
         self.innerSize = size
         return self
@@ -178,6 +204,22 @@ class Display:
             sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_STRETCH)  
         else:
             sdl3.SDL_SetRenderLogicalPresentation(self.renderer, ctypes.c_long(size[0]), ctypes.c_long(size[1]), sdl3.SDL_LOGICAL_PRESENTATION_DISABLED)   
+
+    def blit(self, surface: Surface, rect: rect.Rect):
+        if isinstance(rect, tuple) or isinstance(rect, list):
+            sdl3.SDL_RenderTexture(self.renderer, surface.texture, surface.textureRect, sdl3.SDL_FRect(ctypes.c_float(rect[0]), ctypes.c_float(rect[1]), self.size[0], self.size[1]))
+        else:
+            sdl3.SDL_RenderTexture(self.renderer, surface.texture, surface.textureRect, rect.frect)
+
+
+    
+class Image:
+    def __init__(self, display: Display):
+        self.renderer: sdl3.SDL_Renderer = display.renderer
+    
+    def load(self, fileName) -> Surface:
+        return sdlg_image.load(self.renderer, fileName)
+
 
     
 class Draw:
@@ -336,6 +378,8 @@ class Draw:
         
 
 
+
+
 class Event:
     def __init__(self, type):
         self.type = type
@@ -378,6 +422,7 @@ class Key:
 
 
 
+
 def init():
     sdl3.SDL_Init(sdl3.SDL_INIT_VIDEO | sdl3.SDL_INIT_EVENTS | sdl3.SDL_INIT_AUDIO)
 
@@ -387,6 +432,7 @@ def quit():
     sdl3.SDL_Quit()
 
 display = Display()
+image: Image = display.image
 event = Events()
 draw = Draw()
 key = Key()
