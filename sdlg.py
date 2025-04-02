@@ -14,6 +14,27 @@ import resources.font as font
 
 import resources.image as sdlg_image
 
+def find_system_font(font_name, extensions=(".ttf", ".otf")):
+    """Searches common font directories for the given font name."""
+    font_dirs = [
+        "C:\\Windows\\Fonts\\",  # Windows
+        "/usr/share/fonts/",  # Linux
+        "/usr/local/share/fonts/",
+        os.path.expanduser("~/.fonts/"),  # User-specific Linux fonts
+        "/System/Library/Fonts/",  # macOS
+        "/Library/Fonts/",
+        os.path.expanduser("~/Library/Fonts/"),
+    ]
+
+    for font_dir in font_dirs:
+        if os.path.exists(font_dir):
+            for root, _, files in os.walk(font_dir):
+                for file in files:
+                    if file.lower().startswith(font_name.lower()) and file.lower().endswith(extensions):
+                        return os.path.join(root, file)
+    
+    return None  # Font not found
+
 def sin_and_cos():
 
 
@@ -162,11 +183,15 @@ class Surface:
         return self.rect
 
 class Font:
-    def __init__(self, fileArg: str, size: int):
+    def __init__(self, fileArg: str, size: int, type: str):
         global display
         self.file = fileArg
         self.size = size
-        self.font = sdl3.TTF_OpenFont(self.file.encode(), ctypes.c_float(size))
+        self.type = type
+        if self.type == "Font":
+            self.font = sdl3.TTF_OpenFont(self.file.encode(), ctypes.c_float(size))
+        elif self.type == "SysFont":
+            self.font = sdl3.TTF_OpenFont(find_system_font(self.file).encode(), ctypes.c_float(size))
         self.renderer = display.renderer
 
 

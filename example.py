@@ -65,7 +65,8 @@ running = True
 FramesPerSecond = 0
 
 Font = sdlg.font.Font("fonts/Roboto-SemiBold.ttf", 64)
-Text = Font.render("hi", False, (255, 255, 255, 255), (0, 0, 0, 0))
+Font = sdlg.font.SysFont("arial", 64)
+Text = Font.render("hi", False, (255, 255, 255, 255), (0, 0, 0, 255))
 
 
 testImage = sdlg.image.load("testImages/image.png")
