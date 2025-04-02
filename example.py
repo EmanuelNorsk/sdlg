@@ -64,13 +64,16 @@ started = t.perf_counter()
 running = True
 FramesPerSecond = 0
 
+Font = sdlg.font.Font("fonts/Roboto-SemiBold.ttf", 64)
+Text = Font.render("hi", False, (255, 255, 255, 255), (0, 0, 0, 0))
+
 
 testImage = sdlg.image.load("testImages/image.png")
 testImageRect = testImage.get_rect(center=(100, 100))
 
 testImageRect.topleft = (0, 0)
 
-print(testImageRect)
+print(Text.get_rect())
 
 
 testImage2 = sdlg.image.load("testImages/Sunflower.png")
@@ -106,6 +109,8 @@ def loop():
 
         Screen.blit(testImage, testImageRect)
         Screen.blit(testImage2, (200, 200))
+
+        Screen.blit(Text, (0, 0))
 
         frames += Clock.get_fps()
         count += 1

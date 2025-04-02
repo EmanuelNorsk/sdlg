@@ -10,6 +10,7 @@ import sys
 import math
 
 import resources.rect as rect
+import resources.font as font
 
 import resources.image as sdlg_image
 
@@ -159,7 +160,25 @@ class Surface:
             hWidth, hHeight = self.size[0].value / 2, self.size[1].value / 2
             self.rect = rect.Rect(kwargs["center"][0] - hWidth, kwargs["center"][1] - hHeight, self.size[0].value, self.size[1].value)
         return self.rect
-    
+
+class Font:
+    def __init__(self, fileArg: str, size: int):
+        global display
+        self.file = fileArg
+        self.size = size
+        self.font = sdl3.TTF_OpenFont(self.file.encode(), ctypes.c_float(size))
+        self.renderer = display.renderer
+
+
+    def render(self, text: str, antialiasing, color, backgroundColor) -> Surface:
+        textEncoded = text.encode()
+        surface = sdl3.TTF_RenderText_Shaded(self.font, textEncoded, len(textEncoded), sdl3.SDL_Color(*color), sdl3.SDL_Color(*backgroundColor))
+        texture = sdl3.SDL_CreateTextureFromSurface(self.renderer, surface)
+        error = sdl3.SDL_GetError()
+        if error:
+            print(f"ERROR OVER HERE: {error}")
+        return Surface(texture)
+
 class Display:
     def __init__(self):
         self.window = sdl3.SDL_Window
@@ -168,7 +187,7 @@ class Display:
         self.scale = False
         self.size = (0, 0)
         self.innerSize = (0, 0)
-        self.image: Image = Image(self)
+        self.image: Image = Image()
 
     def set_mode(self, size, flags = 0):
         self.window: sdl3.SDL_Window = sdl3.SDL_CreateWindow(b"Title", ctypes.c_long(size[0]), ctypes.c_long(size[1]), flags)
@@ -207,18 +226,20 @@ class Display:
 
     def blit(self, surface: Surface, rect: rect.Rect):
         if isinstance(rect, tuple) or isinstance(rect, list):
-            sdl3.SDL_RenderTexture(self.renderer, surface.texture, surface.textureRect, sdl3.SDL_FRect(ctypes.c_float(rect[0]), ctypes.c_float(rect[1]), self.size[0], self.size[1]))
+            sdl3.SDL_RenderTexture(self.renderer, surface.texture, surface.textureRect, sdl3.SDL_FRect(ctypes.c_float(rect[0]), ctypes.c_float(rect[1]), surface.size[0], surface.size[1]))
         else:
             sdl3.SDL_RenderTexture(self.renderer, surface.texture, surface.textureRect, rect.frect)
 
 
     
 class Image:
-    def __init__(self, display: Display):
-        self.renderer: sdl3.SDL_Renderer = display.renderer
-    
+    def __init__(self):
+        pass
+
     def load(self, fileName) -> Surface:
-        return sdlg_image.load(self.renderer, fileName)
+        return sdlg_image.load(display.renderer, fileName)
+
+
 
 
     
@@ -379,7 +400,6 @@ class Draw:
 
 
 
-
 class Event:
     def __init__(self, type):
         self.type = type
@@ -425,6 +445,7 @@ class Key:
 
 def init():
     sdl3.SDL_Init(sdl3.SDL_INIT_VIDEO | sdl3.SDL_INIT_EVENTS | sdl3.SDL_INIT_AUDIO)
+    sdl3.TTF_Init()
 
 def quit():
     sdl3.SDL_DestroyRenderer(display.renderer)
@@ -567,3 +588,5 @@ K_ESCAPE = sdl3.SDL_SCANCODE_ESCAPE
 #     display.update()
 
 # quit()
+
+
